@@ -7,11 +7,11 @@ export class Object2D {
 
 
     move(direction: string) {
-        throw new Error("Method not implemented.");
+        // throw new Error("Method not implemented.");
     }
 
     animate() {
-        throw new Error("Method not implemented.");
+        // throw new Error("Method not implemented.");
         
     }
 
