@@ -1,5 +1,5 @@
 import { SPRITE_NAMES } from "../enums/sprites_names";
-import { Object2D } from "./structures/Object2D";
+import { Object2D } from "./patterns/Object2D";
 
 export class Ballon extends Object2D{
     position: {x: number, y: number};

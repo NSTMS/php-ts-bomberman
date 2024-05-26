@@ -1,16 +1,19 @@
 export class InputHandler {
-    keysPressed: string[] = []; 
+    keysPressed: Set<string>; // Używamy Set zamiast tablicy
+
     constructor() {
-        const keys = ['w', 'a', 's', 'd', 'ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight'];
+        this.keysPressed = new Set<string>();
+        const keys = new Set(['w', 'a', 's', 'd', 'ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight']);
+        
         window.addEventListener('keydown', (e: KeyboardEvent) => {
-            if (keys.includes(e.key) && this.keysPressed.indexOf(e.key) === -1) { 
-                this.keysPressed.push(e.key);
+            if (keys.has(e.key)) { 
+                this.keysPressed.add(e.key);
             }
         });
 
         window.addEventListener('keyup', (e: KeyboardEvent) => {
-            if (keys.includes(e.key) && this.keysPressed.indexOf(e.key) !== -1) {
-                this.keysPressed.splice(this.keysPressed.indexOf(e.key), 1);
+            if (keys.has(e.key)) {
+                this.keysPressed.delete(e.key);
             }
         });    
     }

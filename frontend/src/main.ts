@@ -1,15 +1,14 @@
-import { SPRITES, SPRITE_NAMES } from "./enums/sprites_names";
 import { GameBoard } from "./classes/game_board";
-import { game_settings } from "./data/game_settings";
 import { start_connection } from "./services/websocket_service";
-
+import { game_settings } from "./data/game_settings";
+import { SPRITE_NAMES } from "./enums/sprites_names";
 const app = document.getElementById("app");
 
 if (app === null) throw new Error("app is null");
 const HOST = "localhost";
 const PORT = 46089;
 const PATH = "/php-ts-bomberman/backend/sockets.php";
-start_connection(`ws://${HOST}:${PORT}${PATH}`)
+start_connection(`ws://${HOST}:${PORT}${PATH}`);
 
 const canvasWidth = game_settings.board_width * game_settings.sprite_size_x * game_settings.sprite_scale;
 const canvasHeight = game_settings.board_height * game_settings.sprite_size_y * game_settings.sprite_scale;
@@ -45,10 +44,11 @@ const preloadImages = (spriteNames: SPRITE_NAMES[], callback: () => void) => {
     spriteNames.forEach(spriteName => {
         const img = new Image();
         img.src = game_settings.sprite_sheet_path;
+        
+        
         img.onload = onImageLoad;
     });
 };
-
 
 const spriteNames = Object.values(SPRITE_NAMES);
 preloadImages(spriteNames, animate); // Preload images before starting the animation
