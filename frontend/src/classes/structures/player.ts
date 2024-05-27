@@ -13,7 +13,7 @@ export class Player extends Object2D {
         this.game = game;
         this.position = { x: 1, y: 1 };
         this.sprite_name = SPRITE_NAMES.PLAYER_RIGHT;
-        this.speed = 1;
+        this.speed = 0.1;
     }
 
     move(direction: { x: number, y: number }) {
@@ -24,19 +24,25 @@ export class Player extends Object2D {
             y: this.position.y + this.speed * direction.y
         };
 
-        // Round to ensure alignment with the grid
-        newPosition.x = newPosition.x;
-        newPosition.y = newPosition.y;
-
-        // Apply constraints to ensure the new position is within bounds
-        newPosition.x = Math.max(1, Math.min(newPosition.x, this.game.boardWidth));
-        newPosition.y = Math.max(1, Math.min(newPosition.y, this.game.boardHeight));
-
-        // Check for collision with walls
+        // Check for collision with walls and adjust position smoothly
         for (let wall of this.game.walls) {
-            if (Math.round(newPosition.x) === wall.position.x && Math.round(newPosition.y) === wall.position.y) {
+            const wallCenter = { x: wall.position.x + 0.5, y: wall.position.y + 0.5 };
+            const playerCenter = { x: newPosition.x + 0.5, y: newPosition.y + 0.5 };
+            const distance = Math.sqrt(Math.pow(wallCenter.x - playerCenter.x, 2) + Math.pow(wallCenter.y - playerCenter.y, 2));
+            const playerRadius = 0.5;
+            const wallRadius = 0.5;
+
+            if (distance < playerRadius + wallRadius) {
                 console.log('Player collided with wall');
-                return; // If there's a collision, stop the movement
+                const overlap = playerRadius + wallRadius - distance;
+
+                const directionVector = {
+                    x: (playerCenter.x - wallCenter.x) / distance,
+                    y: (playerCenter.y - wallCenter.y) / distance
+                };
+
+                newPosition.x += directionVector.x * overlap;
+                newPosition.y += directionVector.y * overlap;
             }
         }
 
@@ -58,10 +64,17 @@ export class Player extends Object2D {
 
     update = (keys: string[]) => {
         let direction = { x: 0, y: 0 };
-        if (keys.includes('w') || keys.includes('ArrowUp')) direction.y -= this.speed;
-        if (keys.includes('s') || keys.includes('ArrowDown')) direction.y += this.speed;
-        if (keys.includes('a') || keys.includes('ArrowLeft')) direction.x -= this.speed;
-        if (keys.includes('d') || keys.includes('ArrowRight')) direction.x += this.speed;
+        if (keys.includes('w') || keys.includes('ArrowUp')) direction.y -= 1;
+        if (keys.includes('s') || keys.includes('ArrowDown')) direction.y += 1;
+        if (keys.includes('a') || keys.includes('ArrowLeft')) direction.x -= 1;
+        if (keys.includes('d') || keys.includes('ArrowRight')) direction.x += 1;
+
+        // Normalize direction vector to maintain consistent speed
+        const magnitude = Math.sqrt(direction.x * direction.x + direction.y * direction.y);
+        if (magnitude > 0) {
+            direction.x /= magnitude;
+            direction.y /= magnitude;
+        }
 
         this.move(direction);
     }
