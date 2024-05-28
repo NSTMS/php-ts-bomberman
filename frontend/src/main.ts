@@ -2,9 +2,14 @@ import { GameBoard } from "./classes/game_board";
 import { start_connection } from "./services/websocket_service";
 import { game_settings } from "./data/game_settings";
 import { SPRITE_NAMES } from "./enums/sprites_names";
-const app = document.getElementById("app");
+import { preloadImages } from "./classes/loaders/spriteLoader";
+import { PlayfieldType } from "./types/playfieldType";
+import { Wall } from "./classes/structures/wall";
+import { DestructableWall } from "./classes/structures/destructableWall";
 
-if (app === null) throw new Error("app is null");
+const app = document.getElementById("app");
+if (!app) throw new Error("app is null");
+
 const HOST = "localhost";
 const PORT = 46089;
 const PATH = "/php-ts-bomberman/backend/sockets.php";
@@ -19,36 +24,34 @@ canvas.height = canvasHeight;
 canvas.style.backgroundColor = game_settings.board_background_color;
 app.appendChild(canvas);
 
-const ctx = canvas.getContext('2d')!;
+const ctx = canvas.getContext('2d');
+if (!ctx) throw new Error("2D context not available");
 
-const game = new GameBoard();
+let game: GameBoard;
+let lastTime = 0;
 
-const animate = () => {
+const animate = (time: number) => {
+    const deltaTime = time - lastTime;
+    lastTime = time;
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-    game.update();
+    game.update(deltaTime);
     game.draw(ctx);
     requestAnimationFrame(animate);
 };
 
-const preloadImages = (spriteNames: SPRITE_NAMES[], callback: () => void) => {
-    let loadedImages = 0;
-    const totalImages = spriteNames.length;
 
-    const onImageLoad = () => {
-        loadedImages++;
-        if (loadedImages === totalImages) {
-            callback();
-        }
-    };
+export const startGame = (playfield: PlayfieldType) => {
+    const playfieldData = playfield.data;
+    if (!playfieldData) return;
+    
+    const walls = playfieldData.walls.map(pos => new Wall({x: pos.x, y: pos.y}, game_settings.sprite_size_x, game_settings.sprite_size_y));
+    const destructableWalls = playfieldData.destructableWalls.map(pos => new DestructableWall({x: pos.x, y: pos.y}, game_settings.sprite_size_x, game_settings.sprite_size_y));
+    const ballons_positons = playfieldData.baloons.map(pos => ({x: pos.x, y: pos.y}));
 
-    spriteNames.forEach(spriteName => {
-        const img = new Image();
-        img.src = game_settings.sprite_sheet_path;
-        
-        
-        img.onload = onImageLoad;
+    preloadImages(Object.values(SPRITE_NAMES), () => {
+        game = new GameBoard(walls,destructableWalls, ballons_positons);
+        requestAnimationFrame(animate);
     });
-};
+    
+}
 
-const spriteNames = Object.values(SPRITE_NAMES);
-preloadImages(spriteNames, animate); // Preload images before starting the animation

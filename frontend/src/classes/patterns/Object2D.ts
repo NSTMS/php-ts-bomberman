@@ -1,24 +1,23 @@
 import { game_settings } from "../../data/game_settings";
-import { SPRITES, SPRITE_NAMES } from "../../enums/sprites_names";
+import { SPRITES, SPRITE_NAMES, SPRITES_ANIMATION_FRAMES } from "../../enums/sprites_names";
 import { calc_scaled_sprite_on_canvas_position } from "../../services/position_service";
-
+import { Position } from "../../types/positionTypes";
+import { spriteImages } from "../loaders/spriteLoader";
 export class Object2D {
     scaleXsize: number = game_settings.sprite_size_x * game_settings.sprite_scale;
-    img: HTMLImageElement;
+    position: Position = { x: 0, y: 0 };
 
-    constructor() {
-        this.img = new Image();
-        this.img.src = game_settings.sprite_sheet_path;
-    }
-
-    drawSprite(ctx: CanvasRenderingContext2D, sprite_name: SPRITE_NAMES, position: { x: number, y: number }) {
+    drawSprite(ctx: CanvasRenderingContext2D, sprite_name: SPRITE_NAMES, position: { x: number, y: number }, frameIndex: number = 0) {
         const pos = calc_scaled_sprite_on_canvas_position(position);
-        
-        if (this.img.complete) {
+        const spriteFrames = SPRITES_ANIMATION_FRAMES[sprite_name]?.frames;
+        const spriteFrame = spriteFrames ? spriteFrames[frameIndex % spriteFrames.length] : SPRITES[sprite_name];
+
+        const img = spriteImages[sprite_name];
+        if (img) {
             ctx.drawImage(
-                this.img,
-                SPRITES[sprite_name].x,
-                SPRITES[sprite_name].y,
+                img,
+                spriteFrame.x * game_settings.sprite_size_x,
+                spriteFrame.y * game_settings.sprite_size_y,
                 game_settings.sprite_size_x,
                 game_settings.sprite_size_y,
                 pos.x,
@@ -26,20 +25,6 @@ export class Object2D {
                 this.scaleXsize,
                 this.scaleXsize
             );
-        } else {
-            this.img.onload = () => {
-                ctx.drawImage(
-                    this.img,
-                    SPRITES[sprite_name].x,
-                    SPRITES[sprite_name].y,
-                    game_settings.sprite_size_x,
-                    game_settings.sprite_size_y,
-                    pos.x,
-                    pos.y,
-                    this.scaleXsize,
-                    this.scaleXsize
-                );
-            };
         }
     }
 }

@@ -1,9 +1,10 @@
+import { startGame } from "../main";
+
 export const start_connection = (url: string) => {
     const ws = new WebSocket(url);
     ws.onmessage = (e) => {
-        if (e.data != ""){
-            console.log(JSON.parse(e.data));
-        }
+        if(e.data == "") return;
+        startGame(JSON.parse(e.data));
     }
     ws.onerror = (e) => {
         console.error(e);

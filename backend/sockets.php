@@ -1,4 +1,7 @@
 <?php
+
+require_once 'playfield.php';
+
 $host = 'localhost'; // moja domena w ct8.pl
 $port = 46089; // zarezerwowany w panelu port
 $transport = 'http';
@@ -28,7 +31,14 @@ while (true) {
         handshake($client, $headers, $host, $port);
         stream_set_blocking($client, false);
 
-        $data=["msg" => "Nastąpiło połączenie"];
+
+
+        // tutaj logika losowania playfielda
+
+        $playfield = new Playfield();
+        $data = ["data"=> $playfield];
+    
+        send_message($clients, mask(json_encode($data))); //połączenie -> aktualne dane
 
         send_message($clients, mask(json_encode($data))); //połączenie -> aktualne dane
 
@@ -59,7 +69,6 @@ while (true) {
     }
 
     // TICKI - co 4s wysyłamy aktualny czas
-    // TU LOGIKA CZEGOŚ
     send_message($clients, mask(json_encode(["msg"=>"tick".time()])));
 }
 fclose($server);
