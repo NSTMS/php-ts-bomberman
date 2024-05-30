@@ -43,6 +43,7 @@ const animate = (time: number) => {
 export const startGame = (playfield: PlayfieldType) => {
     const playfieldData = playfield.data;
     if (!playfieldData) return;
+    console.log(playfieldData);
     
     const walls = playfieldData.walls.map(pos => new Wall({x: pos.x, y: pos.y}, game_settings.sprite_size_x, game_settings.sprite_size_y));
     const destructableWalls = playfieldData.destructableWalls.map(pos => new DestructableWall({x: pos.x, y: pos.y}, game_settings.sprite_size_x, game_settings.sprite_size_y));

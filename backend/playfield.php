@@ -11,7 +11,7 @@ class Playfield{
     public function __construct(){
         $this->walls = $this->createWalls();
         $this->destructableWalls = $this->createDestructableWalls();
-        $this->players = array(); // Assuming this is initialized elsewhere
+        $this->players = array(); 
         $this->baloons = $this->createBaloons();
     }
 

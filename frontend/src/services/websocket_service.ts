@@ -5,6 +5,8 @@ export const start_connection = (url: string) => {
     ws.onmessage = (e) => {
         if(e.data == "") return;
         startGame(JSON.parse(e.data));
+        console.log(e.data);
+        
     }
     ws.onerror = (e) => {
         console.error(e);
