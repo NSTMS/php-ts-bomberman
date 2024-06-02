@@ -17,7 +17,7 @@ export class Player extends Object2D {
         this.game = game;
         this.position = { x: 1, y: 1 };
         this.sprite_name = SPRITE_NAMES.PLAYER_RIGHT;
-        this.speed = 0.05;
+        this.speed = 0.07;
         this.frameIndex = 0;
         this.frameRate = 10;
         this.frameTimer = 0;

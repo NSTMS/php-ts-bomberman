@@ -1,71 +1,125 @@
 <?php
-
 header('Content-Type: application/json');
 
-$data = json_decode(file_get_contents('php://input'), true);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    $start = $data['start'];
+    $end = $data['end'];
+    $walls = $data['walls'];
 
-$walls = $data['walls'];
-$start = ['x' => 0, 'y' => 0];
-$end = ['x' => 9, 'y' => 9];
-$rows = 10;
-$cols = 10;
+    $path = findPath($start, $end, $walls);
 
-function heuristic($a, $b) {
-    return abs($a['x'] - $b['x']) + abs($a['y'] - $b['y']);
+    echo json_encode($path);
+    exit;
 }
 
-function getNeighbors($node) {
-    global $rows, $cols;
-    $directions = [
-        ['x' => -1, 'y' => 0],
-        ['x' => 1, 'y' => 0],
-        ['x' => 0, 'y' => -1],
-        ['x' => 0, 'y' => 1]
-    ];
-    $neighbors = [];
-    foreach ($directions as $direction) {
-        $x = $node['x'] + $direction['x'];
-        $y = $node['y'] + $direction['y'];
-        if ($x >= 0 && $x < $rows && $y >= 0 && $y < $cols) {
-            $neighbors[] = ['x' => $x, 'y' => $y];
-        }
-    }
-    return $neighbors;
-}
-
-function aStar($start, $end, $walls) {
-    $openSet = [];
+function findPath($start, $end, $walls) {
+    $openSet = [$start];
     $closedSet = [];
-    $startNode = ['x' => $start['x'], 'y' => $start['y'], 'g' => 0, 'h' => heuristic($start, $end), 'f' => 0, 'parent' => null];
-    $startNode['f'] = $startNode['g'] + $startNode['h'];
-    $openSet[] = $startNode;
+    $cameFrom = [];
+
+    $gScore = [];
+    $fScore = [];
+
+    $rows = 5; // Define the number of rows
+    $cols = 5; // Define the number of columns
+
+    foreach ($openSet as $cell) {
+        $gScore[$cell['x']][$cell['y']] = INF;
+        $fScore[$cell['x']][$cell['y']] = INF;
+    }
+
+    $gScore[$start['x']][$start['y']] = 0;
+    $fScore[$start['x']][$start['y']] = heuristicCostEstimate($start, $end);
 
     while (!empty($openSet)) {
-        usort($openSet, function($a, $b) {
-            return $a['f'] - $b['f'];
-        });
-
-        $currentNode = array_shift($openSet);
-        if ($currentNode['x'] === $end['x'] && $currentNode['y'] === $end['y']) {
-            $path = [];
-            $temp = $currentNode;
-            while ($temp) {
-                $path[] = $temp;
-                $temp = $temp['parent'];
-            }
-            return array_reverse($path);
+        $current = getLowestFScore($openSet, $fScore);
+        if ($current == $end) {
+            return reconstructPath($cameFrom, $current);
         }
 
-        $closedSet[] = $currentNode;
-        foreach (getNeighbors($currentNode) as $neighbor) {
-            if (in_array($neighbor, $walls) || in_array($neighbor, $closedSet)) {
+        $openSet = removeElement($openSet, $current);
+        $closedSet[] = $current;
+
+        $neighbors = getNeighbors($current, $walls, $rows, $cols);
+        foreach ($neighbors as $neighbor) {
+            if (in_array($neighbor, $closedSet)) {
                 continue;
             }
 
-            $tentative_g = $currentNode['g'] + 1;
-            $existingNode = null;
-            foreach ($openSet as $node) {
-                if ($node['x'] === $neighbor['x'] && $node['y'] === $neighbor['y']) {
-                    $existingNode = $node;
-                    break;
-       
+            $tentativeGScore = $gScore[$current['x']][$current['y']] + 1;
+
+            if (!in_array($neighbor, $openSet)) {
+                $openSet[] = $neighbor;
+            } elseif ($tentativeGScore >= $gScore[$neighbor['x']][$neighbor['y']]) {
+                continue;
+            }
+
+            $cameFrom[$neighbor['x']][$neighbor['y']] = $current;
+            $gScore[$neighbor['x']][$neighbor['y']] = $tentativeGScore;
+            $fScore[$neighbor['x']][$neighbor['y']] = $gScore[$neighbor['x']][$neighbor['y']] + heuristicCostEstimate($neighbor, $end);
+        }
+    }
+
+    return [];
+}
+
+function heuristicCostEstimate($start, $end) {
+    return abs($start['x'] - $end['x']) + abs($start['y'] - $end['y']);
+}
+
+function getLowestFScore($openSet, $fScore) {
+    $lowestFScore = INF;
+    $lowestFScoreCell = null;
+
+    foreach ($openSet as $cell) {
+        if ($fScore[$cell['x']][$cell['y']] < $lowestFScore) {
+            $lowestFScore = $fScore[$cell['x']][$cell['y']];
+            $lowestFScoreCell = $cell;
+        }
+    }
+
+    return $lowestFScoreCell;
+}
+
+function removeElement($array, $element) {
+    $index = array_search($element, $array);
+    if ($index!== false) {
+        array_splice($array, $index, 1);
+    }
+    return $array;
+}
+
+function getNeighbors($cell, $walls, $rows, $cols) {
+    $neighbors = [];
+
+    $x = $cell['x'];
+    $y = $cell['y'];
+
+    $possibleNeighbors = [
+        ['x' => $x - 1, 'y' => $y],
+        ['x' => $x + 1, 'y' => $y],
+        ['x' => $x, 'y' => $y - 1],
+        ['x' => $x, 'y' => $y + 1]
+    ];
+
+    foreach ($possibleNeighbors as $neighbor) {
+        if ($neighbor['x'] >= 0 && $neighbor['x'] < $rows && $neighbor['y'] >= 0 && $neighbor['y'] < $cols &&!in_array($neighbor, $walls)) {
+            $neighbors[] = $neighbor;
+        }
+    }
+
+    return $neighbors;
+}
+
+function reconstructPath($cameFrom, $current) {
+    $path = [$current];
+
+    while (isset($cameFrom[$current['x']][$current['y']])) {
+        $current = $cameFrom[$current['x']][$current['y']];
+        $path[] = $current;
+    }
+
+    return array_reverse($path);
+}
+?>
