@@ -36,6 +36,39 @@ class Playfield {
         return $destructableWalls;
     }
 
+    public function updateBaloonsPositions() {
+        foreach ($this->baloons as &$baloon) {
+            $newPosition = [
+                'x' => $baloon['position']['x'] + $baloon['direction']['x'],
+                'y' => $baloon['position']['y'] + $baloon['direction']['y']
+            ];
+    
+            if (!$this->checkCollision($newPosition)) {
+                $baloon['position'] = $newPosition;
+            } else {
+                $baloon['direction'] = [
+                    'x' => -$baloon['direction']['x'],
+                    'y' => -$baloon['direction']['y']
+                ];
+            }
+        }
+    }
+    
+    private function checkCollision($position) {
+        foreach ($this->walls as $wall) {
+            if ($wall['x'] === $position['x'] && $wall['y'] === $position['y']) {
+                return true; 
+            }
+        }
+        foreach ($this->destructableWalls as $destructableWall) {
+            if ($destructableWall['x'] === $position['x'] && $destructableWall['y'] === $position['y']) {
+                return true;
+            }
+        }
+        return false; 
+    }
+    
+
     public function getRandomPosition() {
         return array('x' => rand(1, $this->width - 1), 'y' => rand(1, $this->height - 1));
     }

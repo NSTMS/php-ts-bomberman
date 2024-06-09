@@ -82,6 +82,17 @@ export class Player extends Object2D {
             direction.y /= magnitude;
         }
         this.move(direction);
+        for (let balloon of this.game.baloons) {
+            const distance = Math.sqrt(Math.pow(balloon.position.x - this.position.x, 2) + Math.pow(balloon.position.y - this.position.y, 2));
+            const playerRadius = 0.51;
+            const balloonRadius = 0.5;
+    
+            if (distance < playerRadius + balloonRadius) {
+                // Kolizja! Przenieś gracza na początkową pozycję
+                this.position = { x: 1, y: 1 };
+                break;
+            }
+        }
         this.updateAnimation(deltaTime);
     }
 

@@ -16,7 +16,7 @@ $playfield = new Playfield();
 
 while (true) {
     $changed = $clients;
-    stream_select($changed, $write, $except, 4); // 4s - TICKI!!!!!
+    stream_select($changed, $write, $except, 1); // 4s - TICKI!!!!!
  
 	if (in_array($server, $changed)) {
         $client = @stream_socket_accept($server);
@@ -33,8 +33,7 @@ while (true) {
         stream_set_blocking($client, false);
 
         $data = ["data"=> $playfield];
-    
-        send_message($clients, mask(json_encode($data))); //połączenie -> aktualne dane
+        send_message($clients, mask(json_encode($data)));
 
         $found_socket = array_search($server, $changed);
         unset($changed[$found_socket]);
@@ -62,8 +61,9 @@ while (true) {
         send_message($clients, $response);
     }
 
-    // TICKI - co 4s wysyłamy aktualny czas
-    send_message($clients, mask(json_encode(["msg"=>"tick ".time()])));
+    $playfield->updateBaloonsPositions();
+    $data = ["data"=> $playfield];
+    send_message($clients, mask(json_encode($data)));
 }
 fclose($server);
 

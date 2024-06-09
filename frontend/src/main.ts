@@ -54,5 +54,6 @@ export const startGame = (playfield: PlayfieldType) => {
         requestAnimationFrame(animate);
     });
     
+    return game;
 }
 

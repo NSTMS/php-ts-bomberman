@@ -14,6 +14,7 @@ export class Baloon extends Object2D {
     frameIndex: number;
     frameRate: number;
     frameTimer: number;
+    targetPosition: { x: number, y: number } | null;
 
     constructor(position: { x: number, y: number }, direction: { x: number, y: number }, game: GameBoard) {
         super();
@@ -23,8 +24,7 @@ export class Baloon extends Object2D {
         this.game = game;
         this.direction = direction;
         this.speed = .002;
-        console.log(position, direction);
-        
+        this.targetPosition = { x: position.x, y: position.y };
         this.sprite_name = this.direction.x === 1 ? SPRITE_NAMES.BALOON_RIGHT : SPRITE_NAMES.BALOON_LEFT;
         this.frameIndex = 0;
         this.frameRate = 3;
@@ -32,36 +32,51 @@ export class Baloon extends Object2D {
     }
 
     update = (deltaTime: number) => {
-        const newX = this.position.x + this.direction.x * this.speed * deltaTime;
-        const newY = this.position.y + this.direction.y * this.speed * deltaTime;
+        if (this.targetPosition) {
+            const t = deltaTime / 1000; 
+            this.position.x += (this.targetPosition.x - this.position.x) * t;
+            this.position.y += (this.targetPosition.y - this.position.y) * t;
     
-        let collision = false;
-    
-        for (let obstacle of this.game.obstacles) {
-            const obstacleCenter = { x: obstacle.position.x + 0.5, y: obstacle.position.y + 0.5 };
-            const balloonCenter = { x: newX + 0.5, y: newY + 0.5 };
-            const distance = Math.sqrt(Math.pow(obstacleCenter.x - balloonCenter.x, 2) + Math.pow(obstacleCenter.y - balloonCenter.y, 2));
-            const obstacleRadius = 1;
-    
-            if (distance < obstacleRadius) {
-                collision = true;
-                break;
+            if (Math.abs(this.position.x - this.targetPosition.x) < 0.01 &&
+                Math.abs(this.position.y - this.targetPosition.y) < 0.01) {
+                this.position = this.targetPosition;
+                this.targetPosition = null;
             }
-        }
-
-        if (!collision) {
-            this.position.x = newX;
-            this.position.y = newY;
         } else {
-            this.direction = { x: -this.direction.x, y: -this.direction.y };
-            this.sprite_name = this.direction.x === 1 ? SPRITE_NAMES.BALOON_RIGHT : SPRITE_NAMES.BALOON_LEFT;
-        }
+            const newX = this.position.x + this.direction.x * this.speed * deltaTime;
+            const newY = this.position.y + this.direction.y * this.speed * deltaTime;
 
-      
+        
+            let collision = false;
+        
+            for (let obstacle of this.game.obstacles) {
+                const obstacleCenter = { x: obstacle.position.x + 0.5, y: obstacle.position.y + 0.5 };
+                const balloonCenter = { x: newX + 0.5, y: newY + 0.5 };
+                const distance = Math.sqrt(Math.pow(obstacleCenter.x - balloonCenter.x, 2) + Math.pow(obstacleCenter.y - balloonCenter.y, 2));
+                const obstacleRadius = 1;
+        
+                if (distance < obstacleRadius) {
+                    collision = true;
+                    break;
+                }
+            }
     
+            if (!collision) {
+                this.position.x = newX;
+                this.position.y = newY;
+            } else {
+                this.direction = { x: -this.direction.x, y: -this.direction.y };
+                this.sprite_name = this.direction.x === 1 ? SPRITE_NAMES.BALOON_RIGHT : SPRITE_NAMES.BALOON_LEFT;
+            }       
+        }
         this.updateAnimation(deltaTime);
     }
     
+    setTargetPosition(targetPosition: { x: number, y: number }) {
+        console.log('setTargetPosition', targetPosition);
+        this.position = targetPosition;
+        
+    }
 
     updateAnimation(deltaTime: number) {
         this.frameTimer += deltaTime;

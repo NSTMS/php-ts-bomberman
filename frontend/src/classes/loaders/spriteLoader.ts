@@ -1,5 +1,6 @@
 import { SPRITE_NAMES } from "../../enums/sprites_names";
 import { game_settings } from "../../data/game_settings";
+import { GameBoard } from "../game_board";
 export const spriteImages: Record<string, HTMLImageElement> = {};
 
 export const preloadImages = (spriteNames: SPRITE_NAMES[], callback: () => void) => {
@@ -11,7 +12,7 @@ export const preloadImages = (spriteNames: SPRITE_NAMES[], callback: () => void)
             spriteImages[spriteName] = img;
             imagesToLoad--;
             if (imagesToLoad === 0) {
-                callback();
+                return callback();
             }
         };
     });    
