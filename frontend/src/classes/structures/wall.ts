@@ -12,7 +12,5 @@ export class Wall extends Object2D{
         this.height = height;
         this.position = position;
     }
-    draw = (ctx: CanvasRenderingContext2D) => {
-        this.drawSprite(ctx, SPRITE_NAMES.WALL, this.position);
-    }
+    draw = (ctx: CanvasRenderingContext2D) => this.drawSprite(ctx, SPRITE_NAMES.WALL, this.position);
 }

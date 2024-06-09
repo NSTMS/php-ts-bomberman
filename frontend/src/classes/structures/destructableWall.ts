@@ -13,7 +13,5 @@ export class DestructableWall extends Object2D{
         this.position = position;
     }
 
-    draw = (ctx: CanvasRenderingContext2D) => {
-        this.drawSprite(ctx, SPRITE_NAMES.DESTRUCTABLE_WALL, this.position);
-    }
+    draw = (ctx: CanvasRenderingContext2D) => this.drawSprite(ctx, SPRITE_NAMES.DESTRUCTABLE_WALL, this.position);
 }

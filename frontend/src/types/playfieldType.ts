@@ -5,7 +5,9 @@ export type PlayfieldType = {
 export type Playfield = {
     walls: {x: number, y: number}[];
     destructableWalls: {x: number, y: number}[];
-    players: any[]; // Assuming player data structure is not provided
-    baloons: {x: number, y: number}[];
+    players: any[];
+    baloons: {
+        "direction": {x: number, y: number};
+        "position": {x: number, y: number};}[];
 }
 

@@ -17,7 +17,7 @@ export class Player extends Object2D {
         this.game = game;
         this.position = { x: 1, y: 1 };
         this.sprite_name = SPRITE_NAMES.PLAYER_RIGHT;
-        this.speed = 0.07;
+        this.speed = 0.04;
         this.frameIndex = 0;
         this.frameRate = 10;
         this.frameTimer = 0;
@@ -27,7 +27,7 @@ export class Player extends Object2D {
     move(direction: { x: number, y: number }) {
         if (direction.x === 0 && direction.y === 0) {
             this.isMoving = false;
-            return; // No movement
+            return;
         }
 
         this.isMoving = true;
@@ -40,7 +40,7 @@ export class Player extends Object2D {
             const obstacleCenter = { x: obstacle.position.x + 0.5, y: obstacle.position.y + 0.5 };
             const playerCenter = { x: newPosition.x + 0.5, y: newPosition.y + 0.5 };
             const distance = Math.sqrt(Math.pow(obstacleCenter.x - playerCenter.x, 2) + Math.pow(obstacleCenter.y - playerCenter.y, 2));
-            const playerRadius = 0.5;
+            const playerRadius = 0.51;
             const wallRadius = 0.5;
 
             if (distance < playerRadius + wallRadius) {
@@ -76,7 +76,7 @@ export class Player extends Object2D {
         if (keys.includes('a') || keys.includes('ArrowLeft')) direction.x -= 1;
         if (keys.includes('d') || keys.includes('ArrowRight')) direction.x += 1;
 
-        const magnitude = Math.sqrt(direction.x * direction.x + direction.y * direction.y);
+        const magnitude = Math.sqrt(direction.x * direction.x + direction.y * direction.y); // Normalizowanie wektora
         if (magnitude > 0) {
             direction.x /= magnitude;
             direction.y /= magnitude;
@@ -87,26 +87,18 @@ export class Player extends Object2D {
 
     updateAnimation(deltaTime: number) {
         if (!this.isMoving) {
-            this.frameIndex = 0; // Reset to the first frame when not moving
+            this.frameIndex = 0;
             return;
         }
 
         this.frameTimer += deltaTime;
         if (this.frameTimer >= 1000 / this.frameRate) {
             this.frameTimer = 0;
-            const spriteFrames = SPRITES_ANIMATION_FRAMES[this.sprite_name]?.frames;
-            if (spriteFrames) {
-                this.frameIndex = (this.frameIndex + 1) % spriteFrames.length;
+            const animationFrames = SPRITES_ANIMATION_FRAMES[this.sprite_name];
+            if (animationFrames) {
+                this.frameIndex = (this.frameIndex + 1) % animationFrames.frames.length;
             }
         }
     }
-
-    getFrame(): number {
-        return this.frameIndex;
-    }
-
-    draw = (ctx: CanvasRenderingContext2D) => {
-        const frame = this.getFrame();
-        this.drawSprite(ctx, this.sprite_name, this.position, frame);
-    }
+    draw = (ctx: CanvasRenderingContext2D) => this.drawSprite(ctx, this.sprite_name, this.position, this.frameIndex);
 }

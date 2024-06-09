@@ -47,7 +47,7 @@ export const startGame = (playfield: PlayfieldType) => {
     
     const walls = playfieldData.walls.map(pos => new Wall({x: pos.x, y: pos.y}, game_settings.sprite_size_x, game_settings.sprite_size_y));
     const destructableWalls = playfieldData.destructableWalls.map(pos => new DestructableWall({x: pos.x, y: pos.y}, game_settings.sprite_size_x, game_settings.sprite_size_y));
-    const ballons_positons = playfieldData.baloons.map(pos => ({x: pos.x, y: pos.y}));
+    const ballons_positons = playfieldData.baloons.map(pos => ({position: {x: pos.position.x, y: pos.position.y}, direction: {x: pos.direction.x, y: pos.direction.y}}));
 
     preloadImages(Object.values(SPRITE_NAMES), () => {
         game = new GameBoard(walls,destructableWalls, ballons_positons);

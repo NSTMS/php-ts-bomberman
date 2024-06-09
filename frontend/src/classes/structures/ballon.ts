@@ -15,15 +15,17 @@ export class Baloon extends Object2D {
     frameRate: number;
     frameTimer: number;
 
-    constructor(position: { x: number, y: number }, game: GameBoard) {
+    constructor(position: { x: number, y: number }, direction: { x: number, y: number }, game: GameBoard) {
         super();
         this.width = game.sprite_size_x;
         this.height = game.sprite_size_y;
         this.position = position;
         this.game = game;
-        this.direction = { x: 1, y: 0 };
-        this.speed = .005;
-        this.sprite_name = SPRITE_NAMES.BALOON_RIGHT;
+        this.direction = direction;
+        this.speed = .002;
+        console.log(position, direction);
+        
+        this.sprite_name = this.direction.x === 1 ? SPRITE_NAMES.BALOON_RIGHT : SPRITE_NAMES.BALOON_LEFT;
         this.frameIndex = 0;
         this.frameRate = 3;
         this.frameTimer = 0;
@@ -32,32 +34,34 @@ export class Baloon extends Object2D {
     update = (deltaTime: number) => {
         const newX = this.position.x + this.direction.x * this.speed * deltaTime;
         const newY = this.position.y + this.direction.y * this.speed * deltaTime;
-
+    
+        let collision = false;
+    
         for (let obstacle of this.game.obstacles) {
             const obstacleCenter = { x: obstacle.position.x + 0.5, y: obstacle.position.y + 0.5 };
             const balloonCenter = { x: newX + 0.5, y: newY + 0.5 };
             const distance = Math.sqrt(Math.pow(obstacleCenter.x - balloonCenter.x, 2) + Math.pow(obstacleCenter.y - balloonCenter.y, 2));
-            const obstacleRadius = 0.5;
-
+            const obstacleRadius = 1;
+    
             if (distance < obstacleRadius) {
-                this.direction.x *= -1;
-                this.direction.y *= -1;
-                this.sprite_name = this.direction.x === 1 ? SPRITE_NAMES.BALOON_RIGHT : SPRITE_NAMES.BALOON_LEFT;
-                break; 
+                collision = true;
+                break;
             }
         }
 
-        if (newX < 1 || newX >= this.game.boardWidth || newY < 1 || newY >= this.game.boardHeight) {
-            this.direction.x *= -1;
-            this.direction.y *= -1;
+        if (!collision) {
+            this.position.x = newX;
+            this.position.y = newY;
+        } else {
+            this.direction = { x: -this.direction.x, y: -this.direction.y };
             this.sprite_name = this.direction.x === 1 ? SPRITE_NAMES.BALOON_RIGHT : SPRITE_NAMES.BALOON_LEFT;
         }
 
-        this.position.x += this.direction.x * this.speed * deltaTime;
-        this.position.y += this.direction.y * this.speed * deltaTime;
-
+      
+    
         this.updateAnimation(deltaTime);
     }
+    
 
     updateAnimation(deltaTime: number) {
         this.frameTimer += deltaTime;
@@ -69,8 +73,6 @@ export class Baloon extends Object2D {
             }
         }
     }
-    
-    draw = (ctx: CanvasRenderingContext2D) => {
-        this.drawSprite(ctx, this.sprite_name, this.position, this.frameIndex);
-    }
+
+    draw = (ctx: CanvasRenderingContext2D) => this.drawSprite(ctx, this.sprite_name, this.position, this.frameIndex);
 }
