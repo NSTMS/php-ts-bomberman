@@ -1,0 +1,13 @@
+{
+  "name": "php-ts-bomberman",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "front": "cd frontend && npm run dev",
+    "back": "cd backend && \"C:\\xampp\\php\\php.exe\" -f \".\\sockets.php\""
+  },
+  "author": "",
+  "license": "ISC"
+}

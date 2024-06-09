@@ -21,8 +21,8 @@ export class Baloon extends Object2D {
         this.height = game.sprite_size_y;
         this.position = position;
         this.game = game;
-        this.direction = { x: 1, y: 0 }; // Initialize direction
-        this.speed = .005; // Initialize speed
+        this.direction = { x: 1, y: 0 };
+        this.speed = .005;
         this.sprite_name = SPRITE_NAMES.BALOON_RIGHT;
         this.frameIndex = 0;
         this.frameRate = 3;
@@ -33,7 +33,6 @@ export class Baloon extends Object2D {
         const newX = this.position.x + this.direction.x * this.speed * deltaTime;
         const newY = this.position.y + this.direction.y * this.speed * deltaTime;
 
-        // Check for collision with obstacles
         for (let obstacle of this.game.obstacles) {
             const obstacleCenter = { x: obstacle.position.x + 0.5, y: obstacle.position.y + 0.5 };
             const balloonCenter = { x: newX + 0.5, y: newY + 0.5 };
@@ -41,17 +40,14 @@ export class Baloon extends Object2D {
             const obstacleRadius = 0.5;
 
             if (distance < obstacleRadius) {
-                // Reverse direction upon collision
                 this.direction.x *= -1;
                 this.direction.y *= -1;
                 this.sprite_name = this.direction.x === 1 ? SPRITE_NAMES.BALOON_RIGHT : SPRITE_NAMES.BALOON_LEFT;
-                break; // Break out of loop after first collision
+                break; 
             }
         }
 
-        // Check if the balloon is about to go out of bounds
         if (newX < 1 || newX >= this.game.boardWidth || newY < 1 || newY >= this.game.boardHeight) {
-            // Reverse the direction
             this.direction.x *= -1;
             this.direction.y *= -1;
             this.sprite_name = this.direction.x === 1 ? SPRITE_NAMES.BALOON_RIGHT : SPRITE_NAMES.BALOON_LEFT;
